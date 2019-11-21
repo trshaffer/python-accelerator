@@ -32,7 +32,7 @@ if __name__ == "__main__":
             print("2sending still")
             amount_received += len(data)
             print('received "%s"' % data)
-
+        sock.sendall(str.encode("\0"))
     finally:
         print('closing socket')
         sock.close()
