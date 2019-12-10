@@ -1,0 +1,23 @@
+Francis Schickel
+CCL
+pynwheel.py
+
+Description: Runs a UDS server in the background and allows python modules to persist.
+
+Executable: ./pynwheel.py --file [FILE] --args [OPTIONAL_LIST_OF_ARGS]
+
+Testing: Done in the test directory. Run the shell script to find how long it takes for 100 runs for these modules:
+
+1)  sympy
+2)  numpy
+3)  os
+4)  sys
+5)  tensorflow
+6)  pandas
+7)  scipy
+8)  chempy
+9)  qcengine
+10) matplotlib
+
+These modules act as a base few with variation in size and time to import.
+
