@@ -51,18 +51,17 @@ Concerns:    1) The server is currently located in the directory in which it was
              5) Self-made modules may have difficulties if names match. Different python files may try to import them and without an
                 absolute path in the import statement may conflict in Namespace.
 
-Testing:     Done in the final/test directory. The directory should have 2 shell scripts, 1 python script, and 10 python import files
+Testing:     Done in the final/test directory. The directory should have 2 shell scripts, 1 python script, and 9 python import files
              with the following modules:
-             1)  sympy
-             2)  numpy
-             3)  os
-             4)  sys
-             5)  tensorflow
-             6)  pandas
-             7)  scipy
-             8)  chempy
-             9)  qcengine
-             10) matplotlib
+             1) sympy
+             2) numpy
+             3) os
+             4) sys
+             5) tensorflow
+             6) pandas
+             7) chempy
+             8) qcengine
+             9) matplotlib
              -The test shell script envokes and times the python accelerator 100 times per python import file and places the results in a text
               file in a results directory. It also envokes and times the python import file alone as a regular process 100 times.
              -The python script to read data averages the times of each type of test per module and compares the values. It then prints
