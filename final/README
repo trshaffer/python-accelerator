@@ -2,22 +2,81 @@ Francis Schickel
 CCL
 pynwheel.py
 
+Executable: ./pynwheel.py --file [FILE] --args [OPTIONAL_ARGS]
+
 Description: Runs a UDS server in the background and allows python modules to persist.
+             The first time this program is envoked, a daemon server will be created
+             using a Unix Domain Socket located in /tmp/accelerator_socket. The client
+             then creates a socket and connects to the server. Later invocations of this
+             program will check if a server already exists and connect to it if so. The 
+             client and server act in the following manner:
+            
+             User: Envokes process with executable: $./pynwheel.py --file [FILE] --args [OPTIONAL_ARGS]
+                   where the FILE is the python file to be executed and the OPTIONAL_ARGS
+                   is a list of strings that would otherwise be the command line arguments
+                   used for FILE. FILE must be filled, but OPTIONAL_ARGS does not.
+             Client: Parses through arguments and creates JSON of file and arguments.
+             Client: Sends duplicated stdin, stdout, and stderr to server.
+             Server: Receives stdin, stdout, and stderr file descriptors from client.
+             Client: Converts argument JSON into a binary string. Then finds the size 
+                     (in bytes) of the string and creates and sends packet of size to server.
+             Server: Receives size of byte string.
+             Client: Sends byte string of arguments JSON to server.
+             Server: Recevies byte string and converts it back to a JSON.
+             Server: Opens and reads the python file received.
+             Server: Executes all imports in the python file by parsing through the file
+                     line by line until a non-whitespace/comment/import statement is encountered.
+             Server: Sends back error message if error was encountered.
+             Server: Forks off child process.
+             Server: Within the child process, the file descriptors sent to the server are
+                     duplicated over its own so all error messages and outputs are sent to 
+                     the client.
+             Server: Within the child process, the OPTIONAL_ARGS are added to sys.argv.
+             Server: Within the child process, the python file is converted to an executable
+                     AST and evaluated.
+             Server: The parent process waits and sends back the exit value of the child process.
+             Server: The server closes the socket connection and listens for the next client.
+             Client: The client process receives the exit value, closes its socket connection,
+                     and exits with the received exit value.
 
-Executable: ./pynwheel.py --file [FILE] --args [OPTIONAL_LIST_OF_ARGS]
+             Because the server persists in the background, all modules imported will persist beyond the life
+             of each client process.
 
-Testing: Done in the test directory. Run the shell script to find how long it takes for 100 runs for these modules:
+Concerns:    1) The server is currently located in the directory in which it was envoked. This means that python files
+                not in the same directory may need a relative or absolute path.
+             2) The server persists with all found modules. This means that even if a python file does not initially import
+                a specific module, the module is in its Namespace. This may cause naming conflicts.
+             3) Modules that are not installed on the system used will not be able to be used.
+             4) Different versions of modules will not be distinguished by the server. The first version imported will persist.
+             5) Self-made modules may have difficulties if names match. Different python files may try to import them and without an
+                absolute path in the import statement may conflict in Namespace.
 
-1)  sympy
-2)  numpy
-3)  os
-4)  sys
-5)  tensorflow
-6)  pandas
-7)  scipy
-8)  chempy
-9)  qcengine
-10) matplotlib
+Testing:     Done in the final/test directory. The directory should have 2 shell scripts, 1 python script, and 10 python import files
+             with the following modules:
+             1)  sympy
+             2)  numpy
+             3)  os
+             4)  sys
+             5)  tensorflow
+             6)  pandas
+             7)  scipy
+             8)  chempy
+             9)  qcengine
+             10) matplotlib
+             -The test shell script envokes and times the python accelerator 100 times per python import file and places the results in a text
+              file in a results directory. It also envokes and times the python import file alone as a regular process 100 times.
+             -The python script to read data averages the times of each type of test per module and compares the values. It then prints
+              the difference and if the accelerator was faster or not.
+             -The clear shell script clears the directories and allows the tests to be run again.
+             
+             Run tests:    $./run_test.sh
+             Find results: $./read_data.py
+             Clear tests:  $./clear_tests.sh
+
+Results:     The larger modules such as tensorflow benefited much more than other files. However, smaller more regular modules actually gained
+             time for import. So, os, sys, and scipy all gained time while the rest lost import time and benefitted. This means that the accelerator
+             should only be used when heavier modules are being imported frequently, and not on simpler python files that use only os and sys or smaller
+             modules. Different systems may give different results, so further testing is required.
 
 These modules act as a base few with variation in size and time to import.
 
