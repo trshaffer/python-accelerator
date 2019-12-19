@@ -74,7 +74,7 @@ Testing:     Done in the final/test directory. The directory should have 2 shell
              Clear tests:  $./clear_tests.sh
 
 Results:     The larger modules such as tensorflow benefited much more than other files. However, smaller more regular modules actually gained
-             time for import. So, os, sys, and scipy all gained time while the rest lost import time and benefitted. This means that the accelerator
+             time for import. So, os and sys gained time while the rest lost import time and benefitted. This means that the accelerator
              should only be used when heavier modules are being imported frequently, and not on simpler python files that use only os and sys or smaller
              modules. Different systems may give different results, so further testing is required.
 
